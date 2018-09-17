@@ -1,24 +1,39 @@
-# This is a template for a Python scraper on morph.io (https://morph.io)
-# including some code snippets below that you should find helpful
+from bs4 import BeautifulSoup
+import urllib3
+import sqlite3 as sql3
+import os
 
-# import scraperwiki
-# import lxml.html
-#
-# # Read in a page
-# html = scraperwiki.scrape("http://foo.com")
-#
-# # Find something on the page using css selectors
-# root = lxml.html.fromstring(html)
-# root.cssselect("div[align='left']")
-#
-# # Write out to the sqlite database using scraperwiki library
-# scraperwiki.sqlite.save(unique_keys=['name'], data={"name": "susan", "occupation": "software developer"})
-#
-# # An arbitrary query against the database
-# scraperwiki.sql.select("* from data where 'name'='peter'")
+http = urllib3.PoolManager()
+request = http.request('GET', 'https://eskoly.sk/hlavna113/jedalen')
+if request.status==200:
+    raw_data = request.data
+    soup = BeautifulSoup(raw_data, "html.parser")
 
-# You don't have to do things with the ScraperWiki and lxml libraries.
-# You can use whatever libraries you want: https://morph.io/documentation/python
-# All that matters is that your final data is written to an SQLite database
-# called "data.sqlite" in the current working directory which has at least a table
-# called "data".
+    res = []
+    for i in soup.findAll("tr")[2:-1]:
+        i = repr(i).replace("<br/>", "\n")
+        i = BeautifulSoup(i, "html.parser")
+        for j in i.findAll("td")[0:2]:
+            if not j.text.split("\n") == ['']:
+                res.append(j.text.split("\n"))
+
+    for i in range(1, len(res), 2):
+        res[i] = res[i][0:-1]
+    for i in res:
+        print(i)
+
+    if os.path.exists("data.sqlite"):
+        os.remove("data.sqlite")
+    if not os.path.isfile("data.sqlite"):
+        open("data.sqlite", "w").close()
+    connection=sql3.connect("data.sqlite")
+    cursor=connection.cursor()
+    for i in range(int(len(res)/2)):
+        cursor.execute("CREATE TABLE day"+str(i)+" (menu TEXT)")
+        connection.commit()
+        for j in res[i*2+1]:
+            cursor.execute("INSERT INTO day" + str(i) + " values(?)", (j,))
+            connection.commit()
+# print(soup_yeyyy.findAll("tr")[2:-1])
+
+# A really big TODO
