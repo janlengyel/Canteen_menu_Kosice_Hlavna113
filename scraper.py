@@ -6,23 +6,24 @@ from hashlib import md5
 
 http = urllib3.PoolManager()
 request = http.request('GET', 'https://eskoly.sk/hlavna113/jedalen')
-if request.status==200:
+if request.status == 200:
 
     if not os.path.isfile("hash.txt"):
         open("hash.txt", "w").close()
 
-    with open("hash.txt","r") as text:
-        text=text.read()
+    with open("hash.txt", "r") as text:
+        text = text.read()
         if text:
-            hash=text
-            print("file:",hash)
+            hash = text
+            print("file:", hash)
 
     raw_data = request.data
     soup = BeautifulSoup(raw_data, "html.parser")
 
-    print("html:",md5(str(soup.findAll("tr")).encode('utf-8')).hexdigest())
-    
-    if not hash==md5(str(soup.findAll("tr")).encode('utf-8')).hexdigest():
+    print("html:", md5(str(soup.findAll("tr")).encode('utf-8')).hexdigest())
+
+    if not hash == md5(str(soup.findAll("tr")).encode('utf-8')).hexdigest():
+        print("Data difference found")
 
         res = []
         for i in soup.findAll("tr")[2:-1]:
@@ -34,28 +35,35 @@ if request.status==200:
 
         for i in range(1, len(res), 2):
             res[i] = res[i][0:-1]
-        for i in res:
-            print(i)
+        # for i in res:
+        # print(i)
 
-        if os.path.exists("data.sqlite"):
-            os.remove("data.sqlite")
+        # if os.path.exists("data.sqlite"):
+        #    os.remove("data.sqlite")
         if not os.path.isfile("data.sqlite"):
             open("data.sqlite", "w").close()
-        connection=sql3.connect("data.sqlite")
-        cursor=connection.cursor()
-        for i in range(int(len(res)/2)):
-            cursor.execute("CREATE TABLE day"+str(i)+" (menu TEXT)")
-            connection.commit()
-            for j in res[i*2+1]:
-                cursor.execute("INSERT INTO day" + str(i) + " values(?)", (j,))
+
+        connection = sql3.connect("data.sqlite")
+        cursor = connection.cursor()
+        cursor.execute("CREATE TABLE IF NOT EXISTS main(date TEXT, menu TEXT)")
+        connection.commit()
+
+        for i in range(0, len(res), 2):
+            date = str(res[i][1]).replace(". ", "-")
+            meals = str(res[i + 1])
+            date_in_db = cursor.execute("SELECT date FROM main WHERE date=(?)", (date,)).fetchall()
+            meal_in_db = cursor.execute("SELECT menu FROM main WHERE menu=(?)", (meals,)).fetchall()
+            print(date_in_db)
+            print(meal_in_db)
+            if date_in_db and meal_in_db:
+                print("Data for date", date, "are up to date")
+            else:
+                cursor.execute("INSERT INTO main VALUES(?,?)", (date, meals))
                 connection.commit()
+                print("Data for date", date, "were updated")
 
         with open("hash.txt", "w") as text:
             text.write(md5(str(soup.findAll("tr")).encode('utf-8')).hexdigest())
 
     else:
         print("Data are up to date")
-
-# print(soup_yeyyy.findAll("tr")[2:-1])
-
-# A really big TODO
