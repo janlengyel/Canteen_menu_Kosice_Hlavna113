@@ -48,10 +48,14 @@ if request.status == 200:
             meal_in_db = cursor.execute("SELECT menu FROM main WHERE menu=(?)", (meals,)).fetchall()
             if date_in_db and meal_in_db:
                 print("Data for date", date, "are up to date")
-            else:
+            elif date_in_db:
                 cursor.execute("INSERT INTO main VALUES(?,?)", (date, meals))
                 connection.commit()
                 print("Data for date", date, "were updated")
+            else:
+                cursor.execute("INSERT INTO main VALUES(?,?)", (date, meals))
+                connection.commit()
+                print("Data for date", date, "were added")
 
         cursor.execute("INSERT INTO versions VALUES(?)",
                        (md5(str(soup.findAll("tr")).encode('utf-8')).hexdigest(),))
