@@ -43,7 +43,7 @@ if request.status == 200:
 
         for i in range(0, len(res), 2):
             date = str(res[i][1]).replace(". ", "-")
-            meals = str(res[i + 1])
+            meals = str(res[i + 1]).replace("\'","\"")
             date_in_db = cursor.execute("SELECT date FROM main WHERE date=(?)", (date,)).fetchall()
             meal_in_db = cursor.execute("SELECT menu FROM main WHERE menu=(?)", (meals,)).fetchall()
             if date_in_db and meal_in_db:
