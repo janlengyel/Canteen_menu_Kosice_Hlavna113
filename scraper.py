@@ -53,8 +53,6 @@ if request.status == 200:
             meals = str(res[i + 1])
             date_in_db = cursor.execute("SELECT date FROM main WHERE date=(?)", (date,)).fetchall()
             meal_in_db = cursor.execute("SELECT menu FROM main WHERE menu=(?)", (meals,)).fetchall()
-            print(date_in_db)
-            print(meal_in_db)
             if date_in_db and meal_in_db:
                 print("Data for date", date, "are up to date")
             else:
