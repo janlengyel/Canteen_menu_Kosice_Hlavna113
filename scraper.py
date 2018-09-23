@@ -23,7 +23,7 @@ if request.status == 200:
     cursor.execute("CREATE TABLE IF NOT EXISTS versions(hash TEXT)")
     connection.commit()
 
-    hash=cursor.execute("SELECT * FROM versions").fetchone()
+    hash=cursor.execute("SELECT * FROM versions ORDER BY ROWID DESC LIMIT 1").fetchone()
     if hash:hash=hash[0]
     print("data:",hash)
 
@@ -41,6 +41,9 @@ if request.status == 200:
         for i in range(1, len(res), 2):
             res[i] = res[i][0:-1]
 
+        for i in range(len(res[1])):
+            res[1][i]=res[1][i].strip()
+
         for i in range(0, len(res), 2):
             date = str(res[i][1]).replace(". ", "-")
             meals = str(res[i + 1]).replace("\'","\"")
@@ -49,7 +52,7 @@ if request.status == 200:
             if date_in_db and meal_in_db:
                 print("Data for date", date, "are up to date")
             elif date_in_db:
-                cursor.execute("INSERT INTO main VALUES(?,?)", (date, meals))
+                cursor.execute("UPDATE main SET menu=(?) WHERE date=(?)", (meals, date))
                 connection.commit()
                 print("Data for date", date, "were updated")
             else:
