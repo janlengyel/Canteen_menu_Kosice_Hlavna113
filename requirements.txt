@@ -9,4 +9,5 @@
 #cssselect==0.9.1
 certifi
 beautifulsoup4
+urllib3
 
