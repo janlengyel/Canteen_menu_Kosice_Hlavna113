@@ -3,9 +3,9 @@ import urllib3
 import sqlite3 as sql3
 import os
 from hashlib import md5
-import certifi
+#import certifi
 
-http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
+http = urllib3.PoolManager()
 request = http.request('GET', 'https://eskoly.sk/hlavna113/jedalen')
 if request.status == 200:
 
