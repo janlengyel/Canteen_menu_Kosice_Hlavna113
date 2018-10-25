@@ -6,7 +6,7 @@ from hashlib import md5
 #import certifi
 
 http = urllib3.PoolManager()
-request = http.request('GET', 'http://eskoly.sk/hlavna113/jedalen')
+request = http.request('GET', 'https://eskoly.sk:443/hlavna113/jedalen')
 if request.status == 200:
 
     raw_data = request.data
